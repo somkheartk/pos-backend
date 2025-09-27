@@ -87,17 +87,68 @@ export class AuthService {
 
   async createDefaultUser() {
     const existingUser = await this.userModel.findOne({ username: 'admin' });
-    if (!existingUser) {
+    
+    // ถ้า user เดิมมี role แค่ตัวเดียวให้ลบและสร้างใหม่
+    if (existingUser && (!existingUser.roles || existingUser.roles.length <= 1)) {
+      console.log('🔄 อัพเดต Admin user ให้มีหลาย roles');
+      await this.userModel.deleteOne({ username: 'admin' });
+    }
+    
+    // สร้าง user ใหม่หรือสร้างถ้าไม่มี
+    const user = await this.userModel.findOne({ username: 'admin' });
+    if (!user) {
       const hashedPassword = await bcrypt.hash('password', 10);
       const defaultUser = new this.userModel({
         username: 'admin',
         password: hashedPassword,
-        name: 'ผู้ดูแลระบบ',
-        roles: ['admin', 'manager'],
+        name: 'แอดมิน',
+        roles: ['admin', 'manager', 'cashier'],
         isActive: true,
       });
       await defaultUser.save();
-      console.log('✅ สร้าง Admin user เริ่มต้นแล้ว (admin/password)');
+      console.log('✅ สร้าง Admin user ใหม่แล้ว (admin/password) พร้อม 3 roles');
+    } else {
+      console.log(`ℹ️  Admin user มีอยู่แล้ว พร้อม ${user.roles?.length || 0} roles`);
+    }
+
+    // สร้าง sample users อื่นๆ
+    await this.createSampleUsers();
+  }
+
+  async createSampleUsers() {
+    const sampleUsers = [
+      {
+        username: 'manager1',
+        password: 'password',
+        name: 'ผู้จัดการ สาขาหลัก',
+        roles: ['manager', 'cashier']
+      },
+      {
+        username: 'cashier1',
+        password: 'password', 
+        name: 'แคชเชียร์ เวรเช้า',
+        roles: ['cashier', 'viewer']
+      },
+      {
+        username: 'viewer1',
+        password: 'password',
+        name: 'ผู้ดู รายงาน',
+        roles: ['viewer']
+      }
+    ];
+
+    for (const userData of sampleUsers) {
+      const existingUser = await this.userModel.findOne({ username: userData.username });
+      if (!existingUser) {
+        const hashedPassword = await bcrypt.hash(userData.password, 10);
+        const newUser = new this.userModel({
+          ...userData,
+          password: hashedPassword,
+          isActive: true,
+        });
+        await newUser.save();
+        console.log(`✅ สร้าง ${userData.name} (${userData.username}) แล้ว`);
+      }
     }
   }
 }

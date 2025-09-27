@@ -27,8 +27,10 @@ async function bootstrap() {
     }),
   );
 
-  const port = process.env.PORT || 7800;
+  const port = process.env.PORT || 7801;
   await app.listen(port);
   console.log(`🚀 POS Backend is running on: http://localhost:${port}`);
+  console.log(`📚 MongoDB connected to database: pos`);
+  console.log(`🔗 API Endpoints available at: http://localhost:${port}/auth`);
 }
 bootstrap();

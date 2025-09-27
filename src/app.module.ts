@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { AuthService } from './auth/auth.service';
+import { MenuModule } from './menu/menu.module';
+import { MenuService } from './menu/menu.service';
 
 @Module({
   imports: [
@@ -19,14 +21,19 @@ import { AuthService } from './auth/auth.service';
       inject: [ConfigService],
     }),
     AuthModule,
+    MenuModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule implements OnModuleInit {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly menuService: MenuService
+  ) {}
 
   async onModuleInit() {
     await this.authService.createDefaultUser();
+    await this.menuService.initializeDefaultData();
   }
 }

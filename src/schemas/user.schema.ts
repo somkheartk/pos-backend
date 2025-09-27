@@ -24,6 +24,9 @@ export class User {
   })
   roles: string[];
 
+  @Prop({ type: [String], default: [] })
+  permissions: string[]; // เพิ่ม permissions array
+
   @Prop({ default: true })
   isActive: boolean;
 }
